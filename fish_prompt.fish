@@ -1,23 +1,26 @@
 function kubectl_status
-  [ -z "$KUBECTL_PROMPT_ICON" ]; and set -l KUBECTL_PROMPT_ICON "⎈"
-  [ -z "$KUBECTL_PROMPT_SEPARATOR" ]; and set -l KUBECTL_PROMPT_SEPARATOR "/"
-  set -l config $KUBECONFIG
-  [ -z "$config" ]; and set -l config "$HOME/.kube/config"
-  if [ ! -f $config ]
-    echo (set_color red)$KUBECTL_PROMPT_ICON" "(set_color white)"no config"
-    return
-  end
+    [ -z "$KUBECTL_PROMPT_ICON" ]
+    and set -l KUBECTL_PROMPT_ICON "⎈"
+    [ -z "$KUBECTL_PROMPT_SEPARATOR" ]
+    and set -l KUBECTL_PROMPT_SEPARATOR "/"
+    set -l config $KUBECONFIG
+    [ -z "$config" ]
+    and set -l config "$HOME/.kube/config"
+    if [ ! -f $config ]
+        echo (set_color red)$KUBECTL_PROMPT_ICON" "(set_color white)"no config"
+        return
+    end
 
-  set -l ctx (kubectl config current-context 2>/dev/null)
-  if [ $status -ne 0 ]
-    echo (set_color red)$KUBECTL_PROMPT_ICON" "(set_color white)"no context"
-    return
-  end
+    set -l ctx (kubectl config current-context 2>/dev/null)
+    if [ $status -ne 0 ]
+        echo (set_color red)$KUBECTL_PROMPT_ICON" "(set_color white)"no context"
+        return
+    end
 
-  # set -l ns (kubectl config view -o "jsonpath={.contexts[?(@.name==\"$context\")].context.namespace}")
-  # [ -z $ns ]; and set -l ns 'default'
+    # set -l ns (kubectl config view -o "jsonpath={.contexts[?(@.name==\"$context\")].context.namespace}")
+    # [ -z $ns ]; and set -l ns 'default'
 
-  echo (set_color cyan)$KUBECTL_PROMPT_ICON" "(set_color white)"($ctx)"
+    echo (set_color cyan)$KUBECTL_PROMPT_ICON" "(set_color white)"($ctx)"
 end
 
 function fish_prompt
@@ -80,11 +83,7 @@ function fish_prompt
         set -l prompt
         set -l git_ahead (git_ahead "+ " "- " "+- ")
 
-        if test "$branch_name" = master
-            set prompt " $git_glyph $git_ahead"
-        else
-            set prompt " $git_glyph $branch_name $git_ahead"
-        end
+        set prompt " $git_glyph $branch_name $git_ahead"
 
         if set -q git_color[3]
             segment "$git_color[3]" "$git_color[4]" "$prompt"
@@ -95,7 +94,7 @@ function fish_prompt
         end
     end
 
-    echo (kubectl_status)
+    set prompt kubectl_status
 
     segment $base_color " $dir"(set_color white)"$base "
 
@@ -115,29 +114,31 @@ function fish_prompt
     if test "$status_copy" -ne 0
         segment red white (set_color -o)" ! "(set_color normal)
 
-    else if last_job_id > /dev/null
+    else if last_job_id >/dev/null
         segment white 333 " %% "
     end
 
-    if [ "$theme_display_virtualenv" != 'no' ]; and set -q VIRTUAL_ENV
+    if [ "$theme_display_virtualenv" != 'no' ]
+        and set -q VIRTUAL_ENV
         segment yellow blue " "(basename "$VIRTUAL_ENV")" "
     end
 
-    if [ "$theme_display_ruby" != 'no' ]; and set -q RUBY_VERSION
+    if [ "$theme_display_ruby" != 'no' ]
+        and set -q RUBY_VERSION
         segment red fff " "(basename "$RUBY_VERSION")" "
     end
 
     if test "$fish_key_bindings" = "fish_vi_key_bindings"
-      switch $fish_bind_mode
-        case default
-          segment white red "[N]"
-        case insert
-          segment black green "[I]"
-        case replace-one
-          segment yellow blue "[R]"
-        case visual
-          segment white magenta "[V]"
-      end
+        switch $fish_bind_mode
+            case default
+                segment white red "[N]"
+            case insert
+                segment black green "[I]"
+            case replace-one
+                segment yellow blue "[R]"
+            case visual
+                segment white magenta "[V]"
+        end
     end
 
     segment_close
